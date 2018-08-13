@@ -1,0 +1,78 @@
+first 2 steps of thresholding and noise filtering is done by the code.
+
+def surroundedOrNot(pixels,row,col)
+   count = 0
+    for i in -3..3
+       for j in -3..3
+           count += 1 if (pixels[row+i] != nil) && (pixels[row+i][col+j] != nil) && (pixels[row+i][col+j] == 1) 
+       end
+   end
+    return 1 if count > 25
+    return 0
+end
+
+while line = gets()
+    pixels += [line.strip.split(" ").map{|x|x.split(",").map{|p|p.to_f}.reduce(:+)/3.0}] 
+end
+
+for row in 0..pixels.length-1
+    for col in 0..pixels[0].length-1
+        if pixels[row][col] > 150
+            pixels[row][col] = 0
+        else
+            pixels[row][col] = 1
+        end
+    end
+end
+
+binaryPixels = Array.new(pixels.length){|x|x=Array.new(pixels[0].length)}
+for row in 0..pixels.length-1
+    for col in 0..pixels[0].length-1
+        binaryPixels[row][col] = surroundedOrNot(pixels,row,col)
+    end
+end
+
+minRow, minCol, maxRow, maxCol = binaryPixels.length, binaryPixels[0].length,0,0 
+
+for row in 0..pixels.length-1
+    for col in 0..pixels[0].length-1
+        if binaryPixels[row][col] == 1
+               minRow = row if row  maxRow
+               maxCol = col if col > maxCol
+        end
+    end
+end
+
+count = 0
+(minRow..maxRow).each do |row|
+    (minCol..maxCol).each do |col|
+        count +=1 if binaryPixels[row][col] == 1
+    end
+end
+
+binaryPixels.each do |row|
+    puts row.map{|x|x.to_s}.join("")
+end
+
+ratio = (100.0*count)/((maxRow-minRow+1)*(maxCol-minCol+1))
+
+if ratio > 80
+        puts 'box'
+
+An example for normal cell,
+
+000000000000000000000000000000000000000000000000000000000000000000000
+000000000000000000000000000000011000000000000000000000000000000000000
+000000000000000000000000000000111100000000000000000000000000000000000
+000000000000000000000000000001111110000000000000000000000000000000000
+000000000000000000000000000011111111000000000000000000000000000000000
+000000000000000000000000000011111111000000000000000000000000000000000
+000000000000000000000000000011111111000000000000000000000000000000000
+000000000000000000000000000011111111000000000000000000000000000000000
+000000000000000000000000000001111110000000000000000000000000000000000
+000000000000000000000000000001111110000000000000000000000000000000000
+000000000000000000000000000000111100000000000000000000000000000000000
+000000000000000000000000000000011000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000000000000000000000000
+
+Another approach would be to use the Watershed algorithm, which is popularly used in Image Segmentation. It segments various areas on the basis of their intensity, inspired by the flow of water from higher to lower levels as it flows out of a watershed.
